@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分錢大挑戰 - 拯民銀行大師版</title>
+    <style>
+        :root {
+            --c-1000: #3498db; --c-100: #e74c3c; --c-10: #f1c40f; --c-1: #e67e22;
+            --success: #2ecc71; --error: #c0392b; --warning: #f39c12;
+            --bg-board: #2c3e50; --bank-color: #1a252f; --bank-border: #f1c40f;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background-color: #f0f4f8; margin: 0; height: 100vh;
+            display: flex; overflow: hidden; user-select: none;
+        }
+
+        /* --- 模式選單遮罩 --- */
+        #menu-screen, #win-screen {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(44, 62, 80, 0.95); z-index: 20000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center;
+        }
+        #menu-screen h1 { font-size: 48px; margin-bottom: 10px; color: var(--warning); text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #menu-screen p { font-size: 20px; margin-bottom: 40px; opacity: 0.8; }
+        .menu-btn {
+            background-color: var(--success); color: white; border: 4px solid white;
+            padding: 15px 40px; border-radius: 50px; font-size: 24px; font-weight: bold;
+            cursor: pointer; margin: 10px; transition: transform 0.2s; width: 300px;
+        }
+        .menu-btn:hover { transform: scale(1.05); }
+        .menu-btn.btn-challenge { background-color: #e67e22; }
+
+        /* --- 勝利特效 --- */
+        .medal { font-size: 120px; animation: dropIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-bottom: 20px; }
+        @keyframes dropIn { 0% { transform: scale(3) translateY(-50px) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; } }
+
+        /* --- 左側：遊戲操作區 (60%) --- */
+        #game-section { width: 60%; position: relative; display: flex; flex-direction: column; border-right: 5px solid #bdc3c7; background: #ecf0f1; }
+
+        #controls {
+            height: 70px; background: #fff; padding: 0 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center; z-index: 500;
+        }
+
+        .input-group { display: flex; align-items: center; gap: 5px; font-weight: bold; font-size: 16px; }
+        .input-setup { padding: 5px; font-size: 16px; width: 60px; text-align: center; border: 2px solid #bdc3c7; border-radius: 5px; }
+        .action-btn { background-color: var(--success); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .back-btn { background-color: #7f8c8d; }
+
+        #status-banner {
+            height: 40px; display: flex; justify-content: center; align-items: center;
+            font-size: 18px; font-weight: bold; color: white; transition: background 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 400; letter-spacing: 1px;
+        }
+        .mode-money { background-color: #3498db; } .mode-math { background-color: #e67e22; } .mode-done { background-color: #2ecc71; }
+
+        .bank-area { display: flex; gap: 5px; }
+        .bank-btn { width: 35px; height: 35px; border-radius: 50%; border: none; cursor: pointer; color: white; font-weight: bold; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .b-1000 { background: var(--c-1000); border: 2px solid #2980b9; } .b-100 { background: var(--c-100); border: 2px solid #c0392b; }
+        .b-10 { background: var(--c-10); color: #333; border: 2px solid #f39c12; } .b-1 { background: var(--c-1); border: 2px solid #d35400; }
+
+        /* 拯民銀行 */
+        #bank {
+            position: absolute; top: 130px; right: 20px; width: 140px; height: 120px;
+            background-color: var(--bank-color); border-radius: 15px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white; text-align: center;
+            border: 4px solid var(--bank-border); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 50;
+        }
+
+        #people-area {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 35%; background-color: #dcdde1;
+            display: flex; justify-content: space-around; align-items: center; padding: 10px; gap: 10px; z-index: 10; border-top: 3px dashed #bdc3c7;
+        }
+        .person-box { background: white; border: 3px solid #7f8c8d; border-radius: 10px; flex: 1; height: 95%; display: flex; flex-direction: column; }
+        .person-label { background: #7f8c8d; color: white; text-align: center; padding: 5px; font-weight: bold; font-size: 16px; border-radius: 6px 6px 0 0; }
+
+        .money {
+            width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; font-weight: bold; font-size: 14px; position: absolute;
+            cursor: grab; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); transition: top 0.2s, left 0.2s;
+            z-index: 9999; border: 2px solid rgba(0,0,0,0.1);
+        }
+        .money:active { cursor: grabbing; transform: scale(1.1); z-index: 10000; }
+        .money.locked { pointer-events: none; opacity: 0.6; filter: grayscale(30%); }
+        .m-1000 { background: var(--c-1000); color: white; border-color: #2980b9; } .m-100 { background: var(--c-100); color: white; border-color: #c0392b; }
+        .m-10 { background: var(--c-10); color: #333; border-color: #f39c12; } .m-1 { background: var(--c-1); color: white; border-color: #d35400; }
+
+        #verify-btn {
+            position: absolute; bottom: 38%; right: 20px; z-index: 100; background-color: var(--success);
+            color: white; border: none; padding: 12px 25px; border-radius: 30px; font-size: 18px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border: 3px solid white; display: none;
+        }
+
+        .msg-toast {
+            position: absolute; background: rgba(241, 196, 15, 0.95); color: #2c3e50; padding: 8px 15px; border-radius: 20px;
+            font-weight: bold; pointer-events: none; z-index: 10001; transition: opacity 0.5s; border: 2px solid #f39c12;
+        }
+
+        /* --- 右側：直式區 (40%) --- */
+        #math-section {
+            width: 40%; background-color: var(--bg-board); color: white; padding: 20px 10px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; position: relative;
+        }
+        #math-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(44, 62, 80, 0.7); z-index: 50;
+            display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: rgba(255,255,255,0.5); pointer-events: none;
+        }
+
+        .long-division-container { display: grid; row-gap: 0px; font-size: 2rem; font-family: 'Courier New', monospace; margin-top: 10px; z-index: 10; }
+        .ld-cell { display: flex; justify-content: center; align-items: center; height: 50px; position: relative; }
+        .divisor-cell { justify-content: flex-end; padding-right: 5px; } .symbol-cell { justify-content: center; font-weight: bold; } .dividend-cell { font-weight: bold; }
+        .line-row-cell { height: 4px; align-self: center; border-top: 3px solid white; }
+
+        .math-input {
+            width: 35px; height: 45px; font-size: 1.8rem; text-align: center; border: 2px dashed rgba(255,255,255,0.4);
+            background: rgba(0,0,0,0.3); color: white; border-radius: 6px; transition: all 0.2s; font-family: 'Courier New', monospace;
+        }
+        .math-input:focus { border-color: white; outline: none; background: rgba(255,255,255,0.2); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .math-input.correct { background-color: var(--success) !important; border: 2px solid white !important; color: white; animation: pop 0.3s ease-out; }
+        .math-input.wrong { background-color: var(--error) !important; animation: shake 0.4s ease-in-out; }
+
+        .c-1000 { border-color: var(--c-1000); color: #85c1e9; } .c-100 { border-color: var(--c-100); color: #f5b7b1; }
+        .c-10 { border-color: var(--c-10); color: #f9e79f; } .c-1 { border-color: var(--c-1); color: #f0b27a; }
+        
+        .step-item { opacity: 0; pointer-events: none; transition: opacity 0.5s ease-in-out; transform: translateY(-10px); }
+        .step-item.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+        .step-item.done { opacity: 1; pointer-events: none; }
+
+        @keyframes pop { 50% { transform: scale(1.1); } }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+        #success-msg { color: var(--success); font-weight: bold; font-size: 24px; margin-top: 20px; display: none; text-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 10; }
+        
+        .next-lvl-btn { background: #f1c40f; color: #2c3e50; border: none; padding: 10px 20px; border-radius: 20px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 0 #d4ac0d; }
+        .next-lvl-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #d4ac0d; }
+    </style>
+</head>
+<body>
+
+<div id="menu-screen">
+    <h1>🏦 拯民銀行 - 分錢大挑戰</h1>
+    <p>做中學，學中覺，成為數學除法大師！</p>
+    <button class="menu-btn" onclick="startPractice()">✏️ 自主練習模式</button>
+    <button class="menu-btn btn-challenge" onclick="startChallenge()">🏆 闖關挑戰模式</button>
+</div>
+
+<div id="win-screen" style="display:none;">
+    <div class="medal">🏆</div>
+    <h1 style="color:#f1c40f; font-size:50px;">闖關大成功！</h1>
+    <p style="font-size: 24px;">恭喜你獲得「拯民銀行分錢大師」認證！</p>
+    <button class="menu-btn" onclick="showMenu()" style="margin-top: 30px;">返回主選單</button>
+</div>
+
+<div id="game-section">
+    <div id="controls">
+        <div id="practice-controls" class="input-group" style="display:none;">
+            <span>題目：</span>
+            <input type="number" id="set-dividend" class="input-setup" value="52" min="10" max="999"> 
+            <span>÷</span>
+            <input type="number" id="set-divisor" class="input-setup" value="2" min="2" max="9">
+            <button class="action-btn" onclick="loadPracticeProblem()">重新出題</button>
+        </div>
+        <div id="challenge-controls" class="input-group" style="display:none; font-size: 20px; color: #e67e22;">
+            <span id="challenge-title">🏆 闖關模式：第 1 / 4 關</span>
+        </div>
+        
+        <div class="bank-area">
+            <button class="action-btn back-btn" onclick="showMenu()">回選單</button>
+            <span style="margin: 0 10px; border-left: 2px solid #ccc;"></span>
+            <small style="align-self:center; color:#7f8c8d;">補錢：</small>
+            <button class="bank-btn b-1000" onclick="addMoney(1000)">千</button>
+            <button class="bank-btn b-100" onclick="addMoney(100)">百</button>
+            <button class="bank-btn b-10" onclick="addMoney(10)">十</button>
+            <button class="bank-btn b-1" onclick="addMoney(1)">一</button>
+        </div>
+    </div>
+    
+    <div id="status-banner" class="mode-money">準備開始</div>
+
+    <div id="bank">
+        <div style="font-size:36px; margin-bottom: 3px;">🏦</div>
+        <div style="font-size:18px; font-weight:bold; letter-spacing: 1px;">拯民銀行</div>
+        <div style="font-size:12px; color: #f1c40f;">( 退位區 )</div>
+    </div>
+    
+    <button id="verify-btn" onclick="verifyMoney()">我分好了，去紀錄！</button>
+    <div id="people-area"></div>
+</div>
+
+<div id="math-section">
+    <div id="math-overlay">🔒 請先在左邊分錢</div>
+    <div id="division-board" class="long-division-container"></div>
+    <div id="success-msg">
+        <div id="success-text">🎉 算得太棒了！</div>
+        <button id="next-level-btn" class="next-lvl-btn" onclick="nextChallengeLevel()" style="display:none;">進入下一關 ➡️</button>
+    </div>
+</div>
+
+<script>
+    let moneyIdCounter = 0;
+    const peopleArea = document.getElementById('people-area');
+    const bank = document.getElementById('bank');
+    const board = document.getElementById('division-board');
+    const statusBanner = document.getElementById('status-banner');
+    const verifyBtn = document.getElementById('verify-btn');
+    const mathOverlay = document.getElementById('math-overlay');
+    const successMsg = document.getElementById('success-msg');
+    
+    let currentStep = 1; let currentDigitIdx = 0; let totalDigits = 0;
+    let expectedQuotients = []; let isMoneyLocked = false; let globalDivisor = 2;
+    
+    // 雙模式控制變數
+    let isChallengeMode = false;
+    let challengeLevel = 1;
+    let challengeQuestions = [];
+
+    // 闖關模式題庫 (嚴格配合老師需求)
+    const challengePools = [
+        // 1. 不須退位 3位數除法 (位位整除)
+        [{d: 396, v: 3}, {d: 484, v: 4}, {d: 639, v: 3}, {d: 842, v: 2}],
+        // 2. 須退位商為三位數的三位數除法
+        [{d: 532, v: 4}, {d: 735, v: 5}, {d: 852, v: 3}, {d: 945, v: 7}],
+        // 3. 商有零的二或三位數除法
+        [{d: 615, v: 3}, {d: 412, v: 4}, {d: 520, v: 5}, {d: 816, v: 4}],
+        // 4. 商為二位數的三位數除法 (首位不夠除)
+        [{d: 135, v: 5}, {d: 252, v: 4}, {d: 318, v: 6}, {d: 184, v: 8}]
+    ];
+
+    function showMenu() {
+        document.getElementById('menu-screen').style.display = 'flex';
+        document.getElementById('win-screen').style.display = 'none';
+    }
+
+    function startPractice() {
+        isChallengeMode = false;
+        document.getElementById('menu-screen').style.display = 'none';
+        document.getElementById('practice-controls').style.display = 'flex';
+        document.getElementById('challenge-controls').style.display = 'none';
+        loadPracticeProblem();
+    }
+
+    function startChallenge() {
+        isChallengeMode = true;
+        challengeLevel = 1;
+        // 隨機從題庫抽取 4 題
+        challengeQuestions = [
+            challengePools[0][Math.floor(Math.random() * challengePools[0].length)],
+            challengePools[1][Math.floor(Math.random() * challengePools[1].length)],
+            challengePools[2][Math.floor(Math.random() * challengePools[2].length)],
+            challengePools[3][Math.floor(Math.random() * challengePools[3].length)]
+        ];
+        document.getElementById('menu-screen').style.display = 'none';
+        document.getElementById('practice-controls').style.display = 'none';
+        document.getElementById('challenge-controls').style.display = 'flex';
+        loadChallengeProblem();
+    }
+
+    function loadPracticeProblem() {
+        const dividend = parseInt(document.getElementById('set-dividend').value);
+        const divisor = parseInt(document.getElementById('set-divisor').value);
+        if (isNaN(dividend) || dividend < 10 || dividend > 999) return;
+        if (isNaN(divisor) || divisor < 2 || divisor > 9) return;
+        setupProblemInternal(dividend, divisor);
+    }
+
+    function loadChallengeProblem() {
+        document.getElementById('challenge-title').innerText = `🏆 闖關模式：第 ${challengeLevel} / 4 關`;
+        document.getElementById('next-level-btn').style.display = 'none';
+        let q = challengeQuestions[challengeLevel - 1];
+        setupProblemInternal(q.d, q.v);
+    }
+
+    function nextChallengeLevel() {
+        challengeLevel++;
+        if (challengeLevel > 4) {
+            document.getElementById('win-screen').style.display = 'flex';
+        } else {
+            loadChallengeProblem();
+        }
+    }
+
+    function setupProblemInternal(dividend, divisor) {
+        globalDivisor = divisor;
+        document.querySelectorAll('.money').forEach(el => el.remove());
+        peopleArea.innerHTML = ''; board.innerHTML = '';
+        currentStep = 1; currentDigitIdx = 0; expectedQuotients = [];
+        totalDigits = dividend.toString().length;
+        successMsg.style.display = 'none';
+
+        for(let i=0; i<globalDivisor; i++) {
+            const box = document.createElement('div'); box.classList.add('person-box'); box.id = `plate-${i}`;
+            const label = document.createElement('div'); label.classList.add('person-label');
+            label.innerText = (globalDivisor === 2) ? (i===0?"哥哥":"弟弟") : (i+1)+"號";
+            box.appendChild(label); peopleArea.appendChild(box);
+        }
+
+        let tempD = dividend;
+        const thos = Math.floor(tempD / 1000); tempD %= 1000;
+        const huns = Math.floor(tempD / 100); tempD %= 100;
+        const tens = Math.floor(tempD / 10); const ones = tempD % 10;
+
+        const startY = 125; 
+        spawnGrid(1000, thos, 20, startY); spawnGrid(100, huns, 100, startY);
+        spawnGrid(10, tens, 180, startY); spawnGrid(1, ones, 260, startY);
+
+        generateUnlockableDivision(dividend, globalDivisor);
+        setPhaseMoney();
+    }
+
+    // --- 狀態切換 ---
+    function setPhaseMoney() {
+        isMoneyLocked = false;
+        document.querySelectorAll('.money').forEach(m => m.classList.remove('locked'));
+        verifyBtn.style.display = 'block';
+        mathOverlay.style.display = 'flex'; mathOverlay.innerText = "🔒 請先在左邊操作分錢";
+        
+        const labels = ['個', '十', '百', '千'];
+        const placeName = labels[totalDigits - 1 - currentDigitIdx];
+        statusBanner.className = 'mode-money';
+        statusBanner.innerText = `👉 動作 1：請平分【${placeName}位】的錢，分完按右下角按鈕`;
+    }
+
+    function setPhaseMath() {
+        isMoneyLocked = true;
+        document.querySelectorAll('.money').forEach(m => m.classList.add('locked'));
+        verifyBtn.style.display = 'none';
+        mathOverlay.style.display = 'none'; 
+        
+        statusBanner.className = 'mode-math';
+        statusBanner.innerText = `✍️ 動作 2：錢已鎖定！請看著左邊，把結果記錄在右邊直式`;
+        unlockStep(currentDigitIdx * 3 + 1);
+    }
+
+    function verifyMoney() {
+        const currentCoinValue = Math.pow(10, totalDigits - 1 - currentDigitIdx);
+        const expectedCountPerPlate = expectedQuotients[currentDigitIdx];
+        let isCorrect = true;
+        
+        for (let i = 0; i < globalDivisor; i++) {
+            const coinsInThisPlate = document.querySelectorAll(`.money[data-value="${currentCoinValue}"][data-location="${i}"]`).length;
+            if (coinsInThisPlate !== expectedCountPerPlate) { isCorrect = false; break; }
+        }
+
+        if (isCorrect) {
+            // 特別處理商為0的情境：給予語音/文字提示，並直接進寫字模式
+            if(expectedCountPerPlate === 0) {
+                alert(`因為不夠分，所以每一盤都沒分到 ${currentCoinValue} 元。\n請在直式上寫上 0 喔！`);
+            }
+            setPhaseMath();
+        } else {
+            alert(`數目不對喔！\n請確認每一盤分到的 ${currentCoinValue} 元是不是「一樣多」，而且是不是「已經分到不能再分」了？\n(如果不夠分給所有人，那就不能分下去喔！)`);
+        }
+    }
+
+    // --- 輔助拖拉與生成 ---
+    function spawnGrid(value, count, baseX, baseY) {
+        for(let i=0; i<count; i++) {
+            const col = Math.floor(i / 5); const row = i % 5;
+            createMoneyElement(value, baseX + (col * 55), baseY + (row * 55));
+        }
+    }
+
+    function createMoneyElement(value, x, y) {
+        const el = document.createElement('div'); el.classList.add('money', 'm-' + value);
+        el.innerText = value; el.dataset.value = value; el.dataset.location = 'workspace';
+        el.id = 'money-' + moneyIdCounter++; el.style.left = x + 'px'; el.style.top = y + 'px';
+        setupDrag(el); document.body.appendChild(el);
+    }
+    function addMoney(val) { createMoneyElement(val, bank.offsetLeft - 70, bank.offsetTop + 20); }
+
+    function setupDrag(el) {
+        let isDragging = false; let startX, startY, initialLeft, initialTop;
+        const startHandler = (e) => {
+            if(isMoneyLocked) return;
+            e.preventDefault(); isDragging = true;
+            startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            startY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            initialLeft = el.offsetLeft; initialTop = el.offsetTop;
+            el.style.transition = 'none'; el.style.zIndex = 10000;
+        };
+        const moveHandler = (e) => {
+            if (!isDragging) return; e.preventDefault();
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+            el.style.left = (initialLeft + (clientX - startX)) + 'px';
+            el.style.top = (initialTop + (clientY - startY)) + 'px';
+        };
+        const endHandler = (e) => {
+            if (!isDragging) return; isDragging = false;
+            el.style.transition = 'top 0.3s, left 0.3s'; el.style.zIndex = 9999; checkDrop(el);
+        };
+        el.addEventListener('mousedown', startHandler); el.addEventListener('touchstart', startHandler, {passive: false});
+        document.addEventListener('mousemove', moveHandler); document.addEventListener('touchmove', moveHandler, {passive: false});
+        document.addEventListener('mouseup', endHandler); document.addEventListener('touchend', endHandler);
+    }
+
+    function checkDrop(el) {
+        const elRect = el.getBoundingClientRect(); 
+        const bankRect = bank.getBoundingClientRect();
+        if (isOverlapping(elRect, bankRect)) {
+            const val = parseInt(el.dataset.value);
+            if (val > 1) {
+                el.remove(); const nextVal = val / 10;
+                showToast(`🏦 拯民銀行退位成功！`);
+                const targetBaseX = bank.offsetLeft - 120; const targetBaseY = bank.offsetTop;
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => { createMoneyElement(nextVal, targetBaseX + ((i%5) * 22), targetBaseY + (Math.floor(i/5) * 55)); }, i * 40);
+                }
+            } else {
+                showToast("1元不能退位囉！"); el.style.left = (bank.offsetLeft - 60) + 'px';
+            }
+            return;
+        }
+
+        let droppedInPlate = false;
+        document.querySelectorAll('.person-box').forEach((box, index) => {
+            if (isOverlapping(elRect, box.getBoundingClientRect())) {
+                el.dataset.location = index; droppedInPlate = true;
+            }
+        });
+        if(!droppedInPlate) el.dataset.location = 'workspace';
+    }
+
+    function isOverlapping(rect1, rect2) {
+        return !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+    }
+    function showToast(msg) {
+        const div = document.createElement('div'); div.classList.add('msg-toast'); div.innerText = msg;
+        div.style.top = (bank.offsetTop - 40) + 'px'; div.style.left = (bank.offsetLeft - 100) + 'px';
+        document.body.appendChild(div); setTimeout(() => { div.style.opacity = '0'; }, 1500); setTimeout(() => div.remove(), 2000);
+    }
+
+    // ==========================================
+    //  右側：直式引擎
+    // ==========================================
+    function generateUnlockableDivision(dividend, divisor) {
+        const dividendStr = dividend.toString(); const len = dividendStr.length;
+        board.style.gridTemplateColumns = `40px 25px repeat(${len}, 45px)`;
+
+        let cellsHtml = '';
+        function pushCell(content, cssClass = '') { cellsHtml += `<div class="ld-cell ${cssClass}">${content}</div>`; }
+        function getColorCls(i) { const pos = len - 1 - i; if (pos === 3) return 'c-1000'; if (pos === 2) return 'c-100'; if (pos === 1) return 'c-10'; return 'c-1'; }
+
+        pushCell(''); pushCell(''); 
+        for(let i=0; i<len; i++) {
+            let stepNum = i * 3 + 1;
+            pushCell(`<input class="math-input step-item step-${stepNum} ${getColorCls(i)}" data-step="${stepNum}" maxlength="1">`);
+        }
+        pushCell(''); cellsHtml += `<div class="ld-cell line-row-cell" style="grid-column: 2 / span ${len + 1};"></div>`;
+        pushCell(divisor, 'divisor-cell'); pushCell(')', 'symbol-cell');
+        for(let i=0; i<len; i++) pushCell(dividendStr[i], 'dividend-cell');
+
+        let curRem = 0;
+        for(let i=0; i<len; i++) {
+            let baseStep = i * 3; let d = parseInt(dividendStr[i]); curRem = curRem * 10 + d;
+            let q = Math.floor(curRem / divisor); let p = q * divisor; let nRem = curRem - p;
+
+            expectedQuotients.push(q);
+            cellsHtml = cellsHtml.replace(`class="math-input step-item step-${baseStep+1}`, `data-ans="${q}" class="math-input step-item step-${baseStep+1}`);
+
+            let pStep = baseStep + 2; let pRow = Array(len+2).fill('');
+            pRow[1] = `<span class="step-item step-${pStep}">-</span>`;
+            let pStr = p.toString();
+            if (pStr.length === 2 && i > 0) {
+                pRow[i+1] = `<input class="math-input step-item step-${pStep} ${getColorCls(i-1)}" data-ans="${pStr[0]}" maxlength="1">`;
+                pRow[i+2] = `<input class="math-input step-item step-${pStep} ${getColorCls(i)}" data-ans="${pStr[1]}" maxlength="1">`;
+            } else {
+                pRow[i+2] = `<input class="math-input step-item step-${pStep} ${getColorCls(i)}" data-ans="${pStr[0]}" maxlength="1">`;
+            }
+            pRow.forEach(c => pushCell(c));
+
+            pushCell(''); pushCell(''); 
+            cellsHtml += `<div class="ld-cell line-row-cell step-item step-${pStep}" style="grid-column: 3 / span ${len};"></div>`;
+
+            let rStep = baseStep + 3; let rRow = Array(len+2).fill('');
+            rRow[i+2] = `<input class="math-input step-item step-${rStep} ${getColorCls(i)}" data-ans="${nRem}" maxlength="1">`;
+            if (i < len - 1) {
+                rRow[i+3] = `<div style="position:relative; display:flex; justify-content:center;">
+                        <span class="step-item step-${rStep}" style="position:absolute; top:-25px; font-size:16px; color:#95a5a6;">↓</span>
+                        <input class="math-input step-item step-${rStep} ${getColorCls(i+1)}" data-ans="${dividendStr[i+1]}" maxlength="1">
+                    </div>`;
+            }
+            rRow.forEach(c => pushCell(c));
+            curRem = nRem;
+        }
+        board.innerHTML = cellsHtml;
+        document.querySelectorAll('.math-input').forEach(input => {
+            input.addEventListener('input', function() { checkStepInput(this); });
+        });
+    }
+
+    function unlockStep(stepNum) {
+        currentStep = stepNum;
+        const items = document.querySelectorAll(`.step-${stepNum}`);
+        items.forEach(el => el.classList.add('active'));
+        const firstInput = document.querySelector(`input.step-${stepNum}`);
+        if (firstInput) setTimeout(() => firstInput.focus(), 300);
+    }
+
+    function checkStepInput(input) {
+        input.classList.remove('correct', 'wrong');
+        if (input.value === '') return;
+        if (input.value === input.dataset.ans) {
+            input.classList.add('correct');
+            const currentStepInputs = Array.from(document.querySelectorAll(`input.step-${currentStep}`));
+            const allCorrect = currentStepInputs.every(inp => inp.value === inp.dataset.ans);
+            
+            if (allCorrect) {
+                currentStepInputs.forEach(inp => { inp.classList.add('done'); inp.readOnly = true; });
+                
+                if (currentStep % 3 === 0) {
+                    currentDigitIdx++;
+                    if (currentDigitIdx < totalDigits) {
+                        setTimeout(() => { setPhaseMoney(); }, 500);
+                    } else {
+                        // 遊戲勝利處理
+                        statusBanner.className = 'mode-done';
+                        statusBanner.innerText = `🎉 恭喜完成！`;
+                        successMsg.style.display = 'flex';
+                        successMsg.style.flexDirection = 'column';
+                        successMsg.style.alignItems = 'center';
+                        
+                        if(isChallengeMode) {
+                            document.getElementById('success-text').innerText = `🎉 第 ${challengeLevel} 關完成！`;
+                            document.getElementById('next-level-btn').style.display = 'block';
+                        } else {
+                            document.getElementById('success-text').innerText = `🎉 恭喜完成！`;
+                            document.getElementById('next-level-btn').style.display = 'none';
+                        }
+                    }
+                } else {
+                    unlockStep(currentStep + 1);
+                }
+            } else {
+                const nextEmpty = currentStepInputs.find(inp => inp.value === '');
+                if (nextEmpty) nextEmpty.focus();
+            }
+        } else {
+            input.classList.add('wrong');
+            setTimeout(() => { input.classList.remove('wrong'); input.value = ''; }, 500);
+        }
+    }
+</script>
+
+</body>
+</html>
