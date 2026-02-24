@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>分錢大挑戰 - 拯民銀行大師版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>分錢大挑戰 - 拯民銀行 iPad觸控版</title>
     <style>
         :root {
             --c-1000: #3498db; --c-100: #e74c3c; --c-10: #f1c40f; --c-1: #e67e22;
@@ -15,6 +15,7 @@
             font-family: 'Microsoft JhengHei', sans-serif;
             background-color: #f0f4f8; margin: 0; height: 100vh;
             display: flex; overflow: hidden; user-select: none;
+            touch-action: none; /* 防止 iPad 上下捲動 */
         }
 
         /* --- 模式選單遮罩 --- */
@@ -24,48 +25,49 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             color: white; text-align: center;
         }
-        #menu-screen h1 { font-size: 48px; margin-bottom: 10px; color: var(--warning); text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        #menu-screen p { font-size: 20px; margin-bottom: 40px; opacity: 0.8; }
+        #menu-screen h1 { font-size: 56px; margin-bottom: 10px; color: var(--warning); text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #menu-screen p { font-size: 24px; margin-bottom: 40px; opacity: 0.8; }
         .menu-btn {
             background-color: var(--success); color: white; border: 4px solid white;
-            padding: 15px 40px; border-radius: 50px; font-size: 24px; font-weight: bold;
-            cursor: pointer; margin: 10px; transition: transform 0.2s; width: 300px;
+            padding: 20px 40px; border-radius: 50px; font-size: 28px; font-weight: bold;
+            cursor: pointer; margin: 15px; transition: transform 0.2s; width: 350px;
         }
         .menu-btn:hover { transform: scale(1.05); }
         .menu-btn.btn-challenge { background-color: #e67e22; }
 
         /* --- 勝利特效 --- */
-        .medal { font-size: 120px; animation: dropIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-bottom: 20px; }
+        .medal { font-size: 150px; animation: dropIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-bottom: 20px; }
         @keyframes dropIn { 0% { transform: scale(3) translateY(-50px) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; } }
 
-        /* --- 左側：遊戲操作區 (60%) --- */
-        #game-section { width: 60%; position: relative; display: flex; flex-direction: column; border-right: 5px solid #bdc3c7; background: #ecf0f1; }
+        /* --- 左側：遊戲操作區 (調降為55%讓給右邊) --- */
+        #game-section { width: 55%; position: relative; display: flex; flex-direction: column; border-right: 5px solid #bdc3c7; background: #ecf0f1; }
 
         #controls {
-            height: 70px; background: #fff; padding: 0 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            height: 80px; background: #fff; padding: 0 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             display: flex; justify-content: space-between; align-items: center; z-index: 500;
         }
 
-        .input-group { display: flex; align-items: center; gap: 5px; font-weight: bold; font-size: 16px; }
-        .input-setup { padding: 5px; font-size: 16px; width: 60px; text-align: center; border: 2px solid #bdc3c7; border-radius: 5px; }
-        .action-btn { background-color: var(--success); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        /* iPad 觸控加大的輸入框 */
+        .input-group { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 20px; }
+        .input-setup { padding: 8px; font-size: 22px; width: 80px; text-align: center; border: 2px solid #bdc3c7; border-radius: 8px; }
+        .action-btn { background-color: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
         .back-btn { background-color: #7f8c8d; }
 
         #status-banner {
-            height: 40px; display: flex; justify-content: center; align-items: center;
-            font-size: 18px; font-weight: bold; color: white; transition: background 0.3s;
+            height: 45px; display: flex; justify-content: center; align-items: center;
+            font-size: 20px; font-weight: bold; color: white; transition: background 0.3s;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 400; letter-spacing: 1px;
         }
         .mode-money { background-color: #3498db; } .mode-math { background-color: #e67e22; } .mode-done { background-color: #2ecc71; }
 
-        .bank-area { display: flex; gap: 5px; }
-        .bank-btn { width: 35px; height: 35px; border-radius: 50%; border: none; cursor: pointer; color: white; font-weight: bold; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .bank-area { display: flex; gap: 8px; }
+        .bank-btn { width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .b-1000 { background: var(--c-1000); border: 2px solid #2980b9; } .b-100 { background: var(--c-100); border: 2px solid #c0392b; }
         .b-10 { background: var(--c-10); color: #333; border: 2px solid #f39c12; } .b-1 { background: var(--c-1); border: 2px solid #d35400; }
 
         /* 拯民銀行 */
         #bank {
-            position: absolute; top: 130px; right: 20px; width: 140px; height: 120px;
+            position: absolute; top: 140px; right: 20px; width: 140px; height: 130px;
             background-color: var(--bank-color); border-radius: 15px; display: flex; flex-direction: column;
             justify-content: center; align-items: center; color: white; text-align: center;
             border: 4px solid var(--bank-border); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 50;
@@ -76,13 +78,13 @@
             display: flex; justify-content: space-around; align-items: center; padding: 10px; gap: 10px; z-index: 10; border-top: 3px dashed #bdc3c7;
         }
         .person-box { background: white; border: 3px solid #7f8c8d; border-radius: 10px; flex: 1; height: 95%; display: flex; flex-direction: column; }
-        .person-label { background: #7f8c8d; color: white; text-align: center; padding: 5px; font-weight: bold; font-size: 16px; border-radius: 6px 6px 0 0; }
+        .person-label { background: #7f8c8d; color: white; text-align: center; padding: 5px; font-weight: bold; font-size: 18px; border-radius: 6px 6px 0 0; }
 
         .money {
-            width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center;
-            align-items: center; font-weight: bold; font-size: 14px; position: absolute;
+            width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; font-weight: bold; font-size: 16px; position: absolute;
             cursor: grab; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); transition: top 0.2s, left 0.2s;
-            z-index: 9999; border: 2px solid rgba(0,0,0,0.1);
+            z-index: 9999; border: 2px solid rgba(0,0,0,0.1); touch-action: none; /* 防止觸控滑動 */
         }
         .money:active { cursor: grabbing; transform: scale(1.1); z-index: 10000; }
         .money.locked { pointer-events: none; opacity: 0.6; filter: grayscale(30%); }
@@ -91,35 +93,37 @@
 
         #verify-btn {
             position: absolute; bottom: 38%; right: 20px; z-index: 100; background-color: var(--success);
-            color: white; border: none; padding: 12px 25px; border-radius: 30px; font-size: 18px; font-weight: bold;
+            color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 22px; font-weight: bold;
             cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border: 3px solid white; display: none;
         }
 
         .msg-toast {
-            position: absolute; background: rgba(241, 196, 15, 0.95); color: #2c3e50; padding: 8px 15px; border-radius: 20px;
-            font-weight: bold; pointer-events: none; z-index: 10001; transition: opacity 0.5s; border: 2px solid #f39c12;
+            position: absolute; background: rgba(241, 196, 15, 0.95); color: #2c3e50; padding: 12px 20px; border-radius: 20px;
+            font-size: 18px; font-weight: bold; pointer-events: none; z-index: 10001; transition: opacity 0.5s; border: 2px solid #f39c12;
         }
 
-        /* --- 右側：直式區 (40%) --- */
+        /* --- 右側：直式區 (調高為45%) --- */
         #math-section {
-            width: 40%; background-color: var(--bg-board); color: white; padding: 20px 10px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; position: relative;
+            width: 45%; background-color: var(--bg-board); color: white; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; position: relative;
         }
         #math-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(44, 62, 80, 0.7); z-index: 50;
-            display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: rgba(255,255,255,0.5); pointer-events: none;
+            display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; color: rgba(255,255,255,0.5); pointer-events: none;
         }
 
-        .long-division-container { display: grid; row-gap: 0px; font-size: 2rem; font-family: 'Courier New', monospace; margin-top: 10px; z-index: 10; }
-        .ld-cell { display: flex; justify-content: center; align-items: center; height: 50px; position: relative; }
-        .divisor-cell { justify-content: flex-end; padding-right: 5px; } .symbol-cell { justify-content: center; font-weight: bold; } .dividend-cell { font-weight: bold; }
-        .line-row-cell { height: 4px; align-self: center; border-top: 3px solid white; }
+        /* iPad 觸控放大的網格與格子 */
+        .long-division-container { display: grid; row-gap: 0px; font-size: 2.5rem; font-family: 'Courier New', monospace; margin-top: 10px; z-index: 10; }
+        .ld-cell { display: flex; justify-content: center; align-items: center; height: 60px; position: relative; }
+        .divisor-cell { justify-content: flex-end; padding-right: 8px; } .symbol-cell { justify-content: center; font-weight: bold; } .dividend-cell { font-weight: bold; }
+        .line-row-cell { height: 4px; align-self: center; border-top: 4px solid white; }
 
+        /* iPad 觸控放大的輸入框 */
         .math-input {
-            width: 35px; height: 45px; font-size: 1.8rem; text-align: center; border: 2px dashed rgba(255,255,255,0.4);
-            background: rgba(0,0,0,0.3); color: white; border-radius: 6px; transition: all 0.2s; font-family: 'Courier New', monospace;
+            width: 45px; height: 55px; font-size: 2.2rem; text-align: center; border: 3px dashed rgba(255,255,255,0.4);
+            background: rgba(0,0,0,0.3); color: white; border-radius: 8px; transition: all 0.2s; font-family: 'Courier New', monospace;
         }
-        .math-input:focus { border-color: white; outline: none; background: rgba(255,255,255,0.2); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        .math-input.correct { background-color: var(--success) !important; border: 2px solid white !important; color: white; animation: pop 0.3s ease-out; }
+        .math-input:focus { border-color: white; outline: none; background: rgba(255,255,255,0.2); box-shadow: 0 0 15px rgba(255,255,255,0.6); }
+        .math-input.correct { background-color: var(--success) !important; border: 3px solid white !important; color: white; animation: pop 0.3s ease-out; }
         .math-input.wrong { background-color: var(--error) !important; animation: shake 0.4s ease-in-out; }
 
         .c-1000 { border-color: var(--c-1000); color: #85c1e9; } .c-100 { border-color: var(--c-100); color: #f5b7b1; }
@@ -131,9 +135,9 @@
 
         @keyframes pop { 50% { transform: scale(1.1); } }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
-        #success-msg { color: var(--success); font-weight: bold; font-size: 24px; margin-top: 20px; display: none; text-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 10; }
+        #success-msg { color: var(--success); font-weight: bold; font-size: 32px; margin-top: 20px; display: none; text-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 10; }
         
-        .next-lvl-btn { background: #f1c40f; color: #2c3e50; border: none; padding: 10px 20px; border-radius: 20px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 0 #d4ac0d; }
+        .next-lvl-btn { background: #f1c40f; color: #2c3e50; border: none; padding: 15px 30px; border-radius: 30px; font-size: 24px; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 0 #d4ac0d; }
         .next-lvl-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #d4ac0d; }
     </style>
 </head>
@@ -148,28 +152,27 @@
 
 <div id="win-screen" style="display:none;">
     <div class="medal">🏆</div>
-    <h1 style="color:#f1c40f; font-size:50px;">闖關大成功！</h1>
-    <p style="font-size: 24px;">恭喜你獲得「拯民銀行分錢大師」認證！</p>
+    <h1 style="color:#f1c40f; font-size:60px; margin: 0;">闖關大成功！</h1>
+    <p style="font-size: 28px;">恭喜你獲得「拯民銀行分錢大師」認證！</p>
     <button class="menu-btn" onclick="showMenu()" style="margin-top: 30px;">返回主選單</button>
 </div>
 
 <div id="game-section">
     <div id="controls">
-        <div id="practice-controls" class="input-group" style="display:none;">
+        <div id="practice-controls" class="input-group" style="display:none; flex-wrap: wrap;">
             <span>題目：</span>
             <input type="number" id="set-dividend" class="input-setup" value="52" min="10" max="999"> 
             <span>÷</span>
             <input type="number" id="set-divisor" class="input-setup" value="2" min="2" max="9">
-            <button class="action-btn" onclick="loadPracticeProblem()">重新出題</button>
+            <button class="action-btn" onclick="loadPracticeProblem()">確定</button>
         </div>
-        <div id="challenge-controls" class="input-group" style="display:none; font-size: 20px; color: #e67e22;">
-            <span id="challenge-title">🏆 闖關模式：第 1 / 4 關</span>
+        <div id="challenge-controls" class="input-group" style="display:none; font-size: 24px; color: #e67e22;">
+            <span id="challenge-title">🏆 第 1 / 4 關</span>
         </div>
         
         <div class="bank-area">
             <button class="action-btn back-btn" onclick="showMenu()">回選單</button>
             <span style="margin: 0 10px; border-left: 2px solid #ccc;"></span>
-            <small style="align-self:center; color:#7f8c8d;">補錢：</small>
             <button class="bank-btn b-1000" onclick="addMoney(1000)">千</button>
             <button class="bank-btn b-100" onclick="addMoney(100)">百</button>
             <button class="bank-btn b-10" onclick="addMoney(10)">十</button>
@@ -180,9 +183,9 @@
     <div id="status-banner" class="mode-money">準備開始</div>
 
     <div id="bank">
-        <div style="font-size:36px; margin-bottom: 3px;">🏦</div>
-        <div style="font-size:18px; font-weight:bold; letter-spacing: 1px;">拯民銀行</div>
-        <div style="font-size:12px; color: #f1c40f;">( 退位區 )</div>
+        <div style="font-size:40px; margin-bottom: 3px;">🏦</div>
+        <div style="font-size:20px; font-weight:bold; letter-spacing: 1px;">拯民銀行</div>
+        <div style="font-size:14px; color: #f1c40f;">( 退位區 )</div>
     </div>
     
     <button id="verify-btn" onclick="verifyMoney()">我分好了，去紀錄！</button>
@@ -216,16 +219,12 @@
     let challengeLevel = 1;
     let challengeQuestions = [];
 
-    // 闖關模式題庫 (嚴格配合老師需求)
+    // 闖關模式題庫
     const challengePools = [
-        // 1. 不須退位 3位數除法 (位位整除)
-        [{d: 396, v: 3}, {d: 484, v: 4}, {d: 639, v: 3}, {d: 842, v: 2}],
-        // 2. 須退位商為三位數的三位數除法
-        [{d: 532, v: 4}, {d: 735, v: 5}, {d: 852, v: 3}, {d: 945, v: 7}],
-        // 3. 商有零的二或三位數除法
-        [{d: 615, v: 3}, {d: 412, v: 4}, {d: 520, v: 5}, {d: 816, v: 4}],
-        // 4. 商為二位數的三位數除法 (首位不夠除)
-        [{d: 135, v: 5}, {d: 252, v: 4}, {d: 318, v: 6}, {d: 184, v: 8}]
+        [{d: 396, v: 3}, {d: 484, v: 4}, {d: 639, v: 3}, {d: 842, v: 2}], // 不退位
+        [{d: 532, v: 4}, {d: 735, v: 5}, {d: 852, v: 3}, {d: 945, v: 7}], // 退位
+        [{d: 615, v: 3}, {d: 412, v: 4}, {d: 520, v: 5}, {d: 816, v: 4}], // 商有零
+        [{d: 135, v: 5}, {d: 252, v: 4}, {d: 318, v: 6}, {d: 184, v: 8}]  // 首位不夠除
     ];
 
     function showMenu() {
@@ -242,9 +241,7 @@
     }
 
     function startChallenge() {
-        isChallengeMode = true;
-        challengeLevel = 1;
-        // 隨機從題庫抽取 4 題
+        isChallengeMode = true; challengeLevel = 1;
         challengeQuestions = [
             challengePools[0][Math.floor(Math.random() * challengePools[0].length)],
             challengePools[1][Math.floor(Math.random() * challengePools[1].length)],
@@ -258,6 +255,10 @@
     }
 
     function loadPracticeProblem() {
+        // 收起虛擬鍵盤 (iPad Trick)
+        document.getElementById('set-dividend').blur();
+        document.getElementById('set-divisor').blur();
+        
         const dividend = parseInt(document.getElementById('set-dividend').value);
         const divisor = parseInt(document.getElementById('set-divisor').value);
         if (isNaN(dividend) || dividend < 10 || dividend > 999) return;
@@ -266,7 +267,7 @@
     }
 
     function loadChallengeProblem() {
-        document.getElementById('challenge-title').innerText = `🏆 闖關模式：第 ${challengeLevel} / 4 關`;
+        document.getElementById('challenge-title').innerText = `🏆 第 ${challengeLevel} / 4 關`;
         document.getElementById('next-level-btn').style.display = 'none';
         let q = challengeQuestions[challengeLevel - 1];
         setupProblemInternal(q.d, q.v);
@@ -301,7 +302,7 @@
         const huns = Math.floor(tempD / 100); tempD %= 100;
         const tens = Math.floor(tempD / 10); const ones = tempD % 10;
 
-        const startY = 125; 
+        const startY = 135; 
         spawnGrid(1000, thos, 20, startY); spawnGrid(100, huns, 100, startY);
         spawnGrid(10, tens, 180, startY); spawnGrid(1, ones, 260, startY);
 
@@ -319,7 +320,7 @@
         const labels = ['個', '十', '百', '千'];
         const placeName = labels[totalDigits - 1 - currentDigitIdx];
         statusBanner.className = 'mode-money';
-        statusBanner.innerText = `👉 動作 1：請平分【${placeName}位】的錢，分完按右下角按鈕`;
+        statusBanner.innerText = `👉 動作 1：請平分【${placeName}位】，分完按右下角按鈕`;
     }
 
     function setPhaseMath() {
@@ -329,7 +330,7 @@
         mathOverlay.style.display = 'none'; 
         
         statusBanner.className = 'mode-math';
-        statusBanner.innerText = `✍️ 動作 2：錢已鎖定！請看著左邊，把結果記錄在右邊直式`;
+        statusBanner.innerText = `✍️ 動作 2：請看著左邊，把結果記錄在右邊直式`;
         unlockStep(currentDigitIdx * 3 + 1);
     }
 
@@ -344,7 +345,6 @@
         }
 
         if (isCorrect) {
-            // 特別處理商為0的情境：給予語音/文字提示，並直接進寫字模式
             if(expectedCountPerPlate === 0) {
                 alert(`因為不夠分，所以每一盤都沒分到 ${currentCoinValue} 元。\n請在直式上寫上 0 喔！`);
             }
@@ -406,7 +406,7 @@
                 showToast(`🏦 拯民銀行退位成功！`);
                 const targetBaseX = bank.offsetLeft - 120; const targetBaseY = bank.offsetTop;
                 for (let i = 0; i < 10; i++) {
-                    setTimeout(() => { createMoneyElement(nextVal, targetBaseX + ((i%5) * 22), targetBaseY + (Math.floor(i/5) * 55)); }, i * 40);
+                    setTimeout(() => { createMoneyElement(nextVal, targetBaseX + ((i%5) * 25), targetBaseY + (Math.floor(i/5) * 55)); }, i * 40);
                 }
             } else {
                 showToast("1元不能退位囉！"); el.style.left = (bank.offsetLeft - 60) + 'px';
@@ -428,16 +428,17 @@
     }
     function showToast(msg) {
         const div = document.createElement('div'); div.classList.add('msg-toast'); div.innerText = msg;
-        div.style.top = (bank.offsetTop - 40) + 'px'; div.style.left = (bank.offsetLeft - 100) + 'px';
+        div.style.top = (bank.offsetTop - 50) + 'px'; div.style.left = (bank.offsetLeft - 100) + 'px';
         document.body.appendChild(div); setTimeout(() => { div.style.opacity = '0'; }, 1500); setTimeout(() => div.remove(), 2000);
     }
 
     // ==========================================
-    //  右側：直式引擎
+    //  右側：iPad 放大版直式引擎
     // ==========================================
     function generateUnlockableDivision(dividend, divisor) {
         const dividendStr = dividend.toString(); const len = dividendStr.length;
-        board.style.gridTemplateColumns = `40px 25px repeat(${len}, 45px)`;
+        // iPad 版放大網格欄寬 (50px 30px repeat)
+        board.style.gridTemplateColumns = `50px 30px repeat(${len}, 55px)`;
 
         let cellsHtml = '';
         function pushCell(content, cssClass = '') { cellsHtml += `<div class="ld-cell ${cssClass}">${content}</div>`; }
@@ -478,7 +479,7 @@
             rRow[i+2] = `<input class="math-input step-item step-${rStep} ${getColorCls(i)}" data-ans="${nRem}" maxlength="1">`;
             if (i < len - 1) {
                 rRow[i+3] = `<div style="position:relative; display:flex; justify-content:center;">
-                        <span class="step-item step-${rStep}" style="position:absolute; top:-25px; font-size:16px; color:#95a5a6;">↓</span>
+                        <span class="step-item step-${rStep}" style="position:absolute; top:-30px; font-size:18px; color:#95a5a6;">↓</span>
                         <input class="math-input step-item step-${rStep} ${getColorCls(i+1)}" data-ans="${dividendStr[i+1]}" maxlength="1">
                     </div>`;
             }
