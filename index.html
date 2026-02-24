@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>分錢大挑戰 - 拯民銀行 iPad觸控版</title>
+    <title>分錢大挑戰 - 拯民銀行 iPad完美排版版</title>
     <style>
+        /* 強制所有元素包含邊框計算，解決格子重疊問題 */
+        *, *::before, *::after { box-sizing: border-box; }
+
         :root {
             --c-1000: #3498db; --c-100: #e74c3c; --c-10: #f1c40f; --c-1: #e67e22;
             --success: #2ecc71; --error: #c0392b; --warning: #f39c12;
@@ -15,7 +18,7 @@
             font-family: 'Microsoft JhengHei', sans-serif;
             background-color: #f0f4f8; margin: 0; height: 100vh;
             display: flex; overflow: hidden; user-select: none;
-            touch-action: none; /* 防止 iPad 上下捲動 */
+            touch-action: none;
         }
 
         /* --- 模式選單遮罩 --- */
@@ -35,11 +38,10 @@
         .menu-btn:hover { transform: scale(1.05); }
         .menu-btn.btn-challenge { background-color: #e67e22; }
 
-        /* --- 勝利特效 --- */
         .medal { font-size: 150px; animation: dropIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-bottom: 20px; }
         @keyframes dropIn { 0% { transform: scale(3) translateY(-50px) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) translateY(0) rotate(0deg); opacity: 1; } }
 
-        /* --- 左側：遊戲操作區 (調降為55%讓給右邊) --- */
+        /* --- 左側：遊戲操作區 --- */
         #game-section { width: 55%; position: relative; display: flex; flex-direction: column; border-right: 5px solid #bdc3c7; background: #ecf0f1; }
 
         #controls {
@@ -47,7 +49,6 @@
             display: flex; justify-content: space-between; align-items: center; z-index: 500;
         }
 
-        /* iPad 觸控加大的輸入框 */
         .input-group { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 20px; }
         .input-setup { padding: 8px; font-size: 22px; width: 80px; text-align: center; border: 2px solid #bdc3c7; border-radius: 8px; }
         .action-btn { background-color: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; }
@@ -56,7 +57,7 @@
         #status-banner {
             height: 45px; display: flex; justify-content: center; align-items: center;
             font-size: 20px; font-weight: bold; color: white; transition: background 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 400; letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 400; letter-spacing: 1px; flex-shrink: 0;
         }
         .mode-money { background-color: #3498db; } .mode-math { background-color: #e67e22; } .mode-done { background-color: #2ecc71; }
 
@@ -65,7 +66,6 @@
         .b-1000 { background: var(--c-1000); border: 2px solid #2980b9; } .b-100 { background: var(--c-100); border: 2px solid #c0392b; }
         .b-10 { background: var(--c-10); color: #333; border: 2px solid #f39c12; } .b-1 { background: var(--c-1); border: 2px solid #d35400; }
 
-        /* 拯民銀行 */
         #bank {
             position: absolute; top: 140px; right: 20px; width: 140px; height: 130px;
             background-color: var(--bank-color); border-radius: 15px; display: flex; flex-direction: column;
@@ -73,18 +73,20 @@
             border: 4px solid var(--bank-border); box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 50;
         }
 
+        /* 盤子區：加大高度到 42% 解決放不下的問題 */
         #people-area {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 35%; background-color: #dcdde1;
+            position: absolute; bottom: 0; left: 0; right: 0; height: 42%; background-color: #dcdde1;
             display: flex; justify-content: space-around; align-items: center; padding: 10px; gap: 10px; z-index: 10; border-top: 3px dashed #bdc3c7;
         }
         .person-box { background: white; border: 3px solid #7f8c8d; border-radius: 10px; flex: 1; height: 95%; display: flex; flex-direction: column; }
         .person-label { background: #7f8c8d; color: white; text-align: center; padding: 5px; font-weight: bold; font-size: 18px; border-radius: 6px 6px 0 0; }
 
+        /* 錢幣：微縮小到 46px，更好放入盤子 */
         .money {
-            width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center;
-            align-items: center; font-weight: bold; font-size: 16px; position: absolute;
+            width: 46px; height: 46px; border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; font-weight: bold; font-size: 14px; position: absolute;
             cursor: grab; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); transition: top 0.2s, left 0.2s;
-            z-index: 9999; border: 2px solid rgba(0,0,0,0.1); touch-action: none; /* 防止觸控滑動 */
+            z-index: 9999; border: 2px solid rgba(0,0,0,0.1); touch-action: none;
         }
         .money:active { cursor: grabbing; transform: scale(1.1); z-index: 10000; }
         .money.locked { pointer-events: none; opacity: 0.6; filter: grayscale(30%); }
@@ -92,7 +94,7 @@
         .m-10 { background: var(--c-10); color: #333; border-color: #f39c12; } .m-1 { background: var(--c-1); color: white; border-color: #d35400; }
 
         #verify-btn {
-            position: absolute; bottom: 38%; right: 20px; z-index: 100; background-color: var(--success);
+            position: absolute; bottom: 45%; right: 20px; z-index: 100; background-color: var(--success);
             color: white; border: none; padding: 15px 30px; border-radius: 30px; font-size: 22px; font-weight: bold;
             cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border: 3px solid white; display: none;
         }
@@ -102,24 +104,33 @@
             font-size: 18px; font-weight: bold; pointer-events: none; z-index: 10001; transition: opacity 0.5s; border: 2px solid #f39c12;
         }
 
-        /* --- 右側：直式區 (調高為45%) --- */
+        /* --- 右側：數學直式區 --- */
         #math-section {
-            width: 45%; background-color: var(--bg-board); color: white; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; position: relative;
+            width: 45%; background-color: var(--bg-board); color: white; padding: 20px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; /* 讓內容垂直置中 */
+            overflow-y: auto; position: relative;
         }
+        
         #math-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(44, 62, 80, 0.7); z-index: 50;
             display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; color: rgba(255,255,255,0.5); pointer-events: none;
         }
 
-        /* iPad 觸控放大的網格與格子 */
-        .long-division-container { display: grid; row-gap: 0px; font-size: 2.5rem; font-family: 'Courier New', monospace; margin-top: 10px; z-index: 10; }
-        .ld-cell { display: flex; justify-content: center; align-items: center; height: 60px; position: relative; }
+        /* 改進版網格系統：加上 gap 防止邊框重疊 */
+        .long-division-container { 
+            display: grid; 
+            row-gap: 3px; column-gap: 3px; /* 增加間隙防止重疊 */
+            font-size: 2.5rem; font-family: 'Courier New', monospace; 
+            margin: auto; z-index: 10; 
+        }
+        
+        .ld-cell { display: flex; justify-content: center; align-items: center; height: 55px; position: relative; }
         .divisor-cell { justify-content: flex-end; padding-right: 8px; } .symbol-cell { justify-content: center; font-weight: bold; } .dividend-cell { font-weight: bold; }
         .line-row-cell { height: 4px; align-self: center; border-top: 4px solid white; }
 
-        /* iPad 觸控放大的輸入框 */
+        /* 輸入框完美填滿格子 */
         .math-input {
-            width: 45px; height: 55px; font-size: 2.2rem; text-align: center; border: 3px dashed rgba(255,255,255,0.4);
+            width: 100%; height: 100%; font-size: 2.2rem; text-align: center; border: 3px dashed rgba(255,255,255,0.4);
             background: rgba(0,0,0,0.3); color: white; border-radius: 8px; transition: all 0.2s; font-family: 'Courier New', monospace;
         }
         .math-input:focus { border-color: white; outline: none; background: rgba(255,255,255,0.2); box-shadow: 0 0 15px rgba(255,255,255,0.6); }
@@ -135,7 +146,7 @@
 
         @keyframes pop { 50% { transform: scale(1.1); } }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
-        #success-msg { color: var(--success); font-weight: bold; font-size: 32px; margin-top: 20px; display: none; text-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 10; }
+        #success-msg { color: var(--success); font-weight: bold; font-size: 32px; margin-top: 20px; display: none; text-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 10; text-align: center; }
         
         .next-lvl-btn { background: #f1c40f; color: #2c3e50; border: none; padding: 15px 30px; border-radius: 30px; font-size: 24px; font-weight: bold; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 0 #d4ac0d; }
         .next-lvl-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #d4ac0d; }
@@ -214,17 +225,15 @@
     let currentStep = 1; let currentDigitIdx = 0; let totalDigits = 0;
     let expectedQuotients = []; let isMoneyLocked = false; let globalDivisor = 2;
     
-    // 雙模式控制變數
     let isChallengeMode = false;
     let challengeLevel = 1;
     let challengeQuestions = [];
 
-    // 闖關模式題庫
     const challengePools = [
-        [{d: 396, v: 3}, {d: 484, v: 4}, {d: 639, v: 3}, {d: 842, v: 2}], // 不退位
-        [{d: 532, v: 4}, {d: 735, v: 5}, {d: 852, v: 3}, {d: 945, v: 7}], // 退位
-        [{d: 615, v: 3}, {d: 412, v: 4}, {d: 520, v: 5}, {d: 816, v: 4}], // 商有零
-        [{d: 135, v: 5}, {d: 252, v: 4}, {d: 318, v: 6}, {d: 184, v: 8}]  // 首位不夠除
+        [{d: 396, v: 3}, {d: 484, v: 4}, {d: 639, v: 3}, {d: 842, v: 2}], 
+        [{d: 532, v: 4}, {d: 735, v: 5}, {d: 852, v: 3}, {d: 945, v: 7}], 
+        [{d: 615, v: 3}, {d: 412, v: 4}, {d: 520, v: 5}, {d: 816, v: 4}], 
+        [{d: 135, v: 5}, {d: 252, v: 4}, {d: 318, v: 6}, {d: 184, v: 8}]  
     ];
 
     function showMenu() {
@@ -255,7 +264,6 @@
     }
 
     function loadPracticeProblem() {
-        // 收起虛擬鍵盤 (iPad Trick)
         document.getElementById('set-dividend').blur();
         document.getElementById('set-divisor').blur();
         
@@ -303,14 +311,13 @@
         const tens = Math.floor(tempD / 10); const ones = tempD % 10;
 
         const startY = 135; 
-        spawnGrid(1000, thos, 20, startY); spawnGrid(100, huns, 100, startY);
-        spawnGrid(10, tens, 180, startY); spawnGrid(1, ones, 260, startY);
+        spawnGrid(1000, thos, 20, startY); spawnGrid(100, huns, 90, startY);
+        spawnGrid(10, tens, 160, startY); spawnGrid(1, ones, 230, startY);
 
         generateUnlockableDivision(dividend, globalDivisor);
         setPhaseMoney();
     }
 
-    // --- 狀態切換 ---
     function setPhaseMoney() {
         isMoneyLocked = false;
         document.querySelectorAll('.money').forEach(m => m.classList.remove('locked'));
@@ -354,11 +361,11 @@
         }
     }
 
-    // --- 輔助拖拉與生成 ---
+    // 更新錢幣間距 (配合縮小的尺寸)
     function spawnGrid(value, count, baseX, baseY) {
         for(let i=0; i<count; i++) {
             const col = Math.floor(i / 5); const row = i % 5;
-            createMoneyElement(value, baseX + (col * 55), baseY + (row * 55));
+            createMoneyElement(value, baseX + (col * 48), baseY + (row * 48));
         }
     }
 
@@ -406,7 +413,7 @@
                 showToast(`🏦 拯民銀行退位成功！`);
                 const targetBaseX = bank.offsetLeft - 120; const targetBaseY = bank.offsetTop;
                 for (let i = 0; i < 10; i++) {
-                    setTimeout(() => { createMoneyElement(nextVal, targetBaseX + ((i%5) * 25), targetBaseY + (Math.floor(i/5) * 55)); }, i * 40);
+                    setTimeout(() => { createMoneyElement(nextVal, targetBaseX + ((i%5) * 22), targetBaseY + (Math.floor(i/5) * 48)); }, i * 40);
                 }
             } else {
                 showToast("1元不能退位囉！"); el.style.left = (bank.offsetLeft - 60) + 'px';
@@ -433,12 +440,13 @@
     }
 
     // ==========================================
-    //  右側：iPad 放大版直式引擎
+    //  右側：置中、等比縮放網格引擎
     // ==========================================
     function generateUnlockableDivision(dividend, divisor) {
         const dividendStr = dividend.toString(); const len = dividendStr.length;
-        // iPad 版放大網格欄寬 (50px 30px repeat)
-        board.style.gridTemplateColumns = `50px 30px repeat(${len}, 55px)`;
+        
+        // 使用 55px 做為基準單元格寬度，完美適配 iPad 觸控
+        board.style.gridTemplateColumns = `40px 30px repeat(${len}, 55px)`;
 
         let cellsHtml = '';
         function pushCell(content, cssClass = '') { cellsHtml += `<div class="ld-cell ${cssClass}">${content}</div>`; }
@@ -478,8 +486,8 @@
             let rStep = baseStep + 3; let rRow = Array(len+2).fill('');
             rRow[i+2] = `<input class="math-input step-item step-${rStep} ${getColorCls(i)}" data-ans="${nRem}" maxlength="1">`;
             if (i < len - 1) {
-                rRow[i+3] = `<div style="position:relative; display:flex; justify-content:center;">
-                        <span class="step-item step-${rStep}" style="position:absolute; top:-30px; font-size:18px; color:#95a5a6;">↓</span>
+                rRow[i+3] = `<div style="position:relative; display:flex; justify-content:center; width:100%; height:100%;">
+                        <span class="step-item step-${rStep}" style="position:absolute; top:-35px; font-size:20px; color:#95a5a6;">↓</span>
                         <input class="math-input step-item step-${rStep} ${getColorCls(i+1)}" data-ans="${dividendStr[i+1]}" maxlength="1">
                     </div>`;
             }
@@ -516,7 +524,6 @@
                     if (currentDigitIdx < totalDigits) {
                         setTimeout(() => { setPhaseMoney(); }, 500);
                     } else {
-                        // 遊戲勝利處理
                         statusBanner.className = 'mode-done';
                         statusBanner.innerText = `🎉 恭喜完成！`;
                         successMsg.style.display = 'flex';
